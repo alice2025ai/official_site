@@ -9,13 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.4",
     "@react-spring/web": "^9.7.5",
     "@react-three/fiber": "^8.18.0",
+    "@reown/walletkit": "^1.2.2",
     "@shadergradient/react": "^2.0.22",
+    "@tanstack/react-query": "^5.69.0",
+    "@walletconnect/core": "^2.19.1",
+    "@walletconnect/utils": "^2.19.1",
+    "ethers": "^6.13.5",
     "next": "14.2.13",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "three": "^0.173.0"
+    "three": "^0.173.0",
+    "viem": "^2.23.15",
+    "wagmi": "^2.14.15"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

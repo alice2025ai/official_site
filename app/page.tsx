@@ -1,12 +1,17 @@
 import Image from 'next/image';
 import GradientBackground from './components/GradientBackground';
+import Link from 'next/link';
+import WalletConnect from './components/WalletConnect';
 
 export default function Home() {
   return (
     <div className="min-h-screen w-full bg-white">
-      <nav className="h-20 w-full flex justify-center items-center text-black text-2xl font-semibold gap-1">
-        <Image src="/logo.svg" alt="Alice" width={32} height={32} />
-        Alice
+      <nav className="h-20 w-full flex justify-between items-center px-8 text-black text-2xl font-semibold">
+        <div className="flex items-center gap-1">
+          <Image src="/logo.svg" alt="Alice" width={32} height={32} />
+          Alice
+        </div>
+        <WalletConnect />
       </nav>
       <GradientBackground />
       <header className="flex justify-center items-center relative min-h-[600px] overflow-hidden">
@@ -20,12 +25,16 @@ export default function Home() {
             </p>
             <p className="text-white/60 mb-6">Coming soon</p>
             <div className="flex gap-4 justify-center">
-              <button className="bg-black text-white px-6 py-2 rounded-lg">
-                Search agent
-              </button>
-              <button className="bg-white text-black px-6 py-2 rounded-lg">
-                Create agent
-              </button>
+              <Link href="/search-agent">
+                <button className="bg-black text-white px-6 py-2 rounded-lg">
+                  Search agent
+                </button>
+              </Link>
+              <Link href="/create-agent">
+                <button className="bg-white text-black px-6 py-2 rounded-lg">
+                  Create agent
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -131,7 +140,7 @@ export default function Home() {
             </h2>
           </div>
 
-          {/* 时间轴 */}
+          {/* Timeline */}
           <div className="flex justify-between mt-12 gap-4">
             <div className="flex flex-col justify-between w-[25%]">
               <div className="text-lg text-gray-600">2025.3.31</div>

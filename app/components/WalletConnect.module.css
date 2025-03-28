@@ -1,0 +1,48 @@
+.walletConnectWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.walletConnectWrapper :global(.iek-modal-background) {
+  justify-content: center !important;
+}
+
+/* 确保钱包列表在屏幕中央 */
+.walletConnectWrapper :global(.iek-modal-content) {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* 统一钱包图标尺寸 */
+.walletConnectWrapper :global(img[alt="wallet icon"]) {
+  width: 40px !important;
+  height: 40px !important;
+  object-fit: contain !important;
+}
+
+/* 钱包选择按钮样式 */
+.walletConnectWrapper :global(.wallet-button) {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* 钱包连接按钮样式 */
+.walletConnectWrapper button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem !important;
+}
+
+/* 连接按钮的文本样式 */
+.walletConnectWrapper :global([class*='connect-button__content']) {
+  font-size: 0.85rem !important;
+}
+
+/* 连接按钮内部所有文本元素 */
+.walletConnectWrapper :global([class*='connect-button']) * {
+  font-size: 0.85rem !important;
+} 
