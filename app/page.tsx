@@ -181,12 +181,22 @@ export default function Home() {
           </div>
           <div>
             <h4 className="font-bold mb-2">Contact us</h4>
-            <a
-              className="text-gray-400"
-              href="mailto:alice_ai_2025@outlook.com"
-            >
-              Email: alice_ai_2025@outlook.com
-            </a>
+            <div className="flex items-center gap-4">
+              <a
+                href="mailto:alice_ai_2025@outlook.com"
+                aria-label="Email us"
+              >
+                <Image src="/email-icon.svg" alt="Email" width={20} height={20} />
+              </a>
+              <a
+                href="https://github.com/alice2025ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+              >
+                <Image src="/github-icon.svg" alt="GitHub" width={20} height={20} />
+              </a>
+            </div>
           </div>
         </div>
       </footer>

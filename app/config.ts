@@ -7,7 +7,7 @@ export const API_CONFIG = {
   /**
    * Server API base URL for backend services
    */
-  SERVER_API: 'your server api url',
+  SERVER_API: 'http://38.54.24.5:8088',
 };
 
 // Web3 configuration
