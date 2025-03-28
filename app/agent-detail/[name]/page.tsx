@@ -7,6 +7,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { useWallet } from '../../context/WalletContext';
 import { useSharesBalance } from '../../hooks/useSharesBalance';
 import { useRouter } from 'next/navigation';
+import TradeForm from '../../shares/TradeForm';
 
 export default function AgentDetailPage({ params }: { params: { name: string } }) {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function AgentDetailPage({ params }: { params: { name: string } }
   const [agent, setAgent] = useState<AgentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [tradeMode, setTradeMode] = useState<'buy' | 'sell' | null>(null);
   
   // Decode agent name from URL
   const agentName = decodeURIComponent(params.name);
@@ -23,16 +25,28 @@ export default function AgentDetailPage({ params }: { params: { name: string } }
     agent?.subject_address || ''
   );
   
-  // Handle Buy button click
+  // Handle Buy button click - opens the buy modal
   const handleBuy = () => {
     if (!agent?.subject_address) return;
-    router.push(`/shares?action=buy&subjectAddress=${agent.subject_address}`);
+    setTradeMode('buy');
   };
   
-  // Handle Sell button click
+  // Handle Sell button click - opens the sell modal
   const handleSell = () => {
     if (!agent?.subject_address) return;
-    router.push(`/shares?action=sell&subjectAddress=${agent.subject_address}`);
+    setTradeMode('sell');
+  };
+  
+  // Handle closing the trade form
+  const handleCloseTradeForm = () => {
+    setTradeMode(null);
+  };
+  
+  // Handle trade completion
+  const handleTradeComplete = () => {
+    setTradeMode(null);
+    // Refresh balance after successful trade
+    // This assumes useSharesBalance has a way to refresh
   };
   
   // Load Agent details
@@ -158,6 +172,19 @@ export default function AgentDetailPage({ params }: { params: { name: string } }
           </div>
         </div>
       </div>
+
+      {tradeMode && agent && (
+        <TradeForm
+          mode={tradeMode}
+          share={{
+            subject_address: agent.subject_address,
+            shares_amount: formattedBalance
+          }}
+          userAddress={walletAddress || ''}
+          onClose={handleCloseTradeForm}
+          onComplete={handleTradeComplete}
+        />
+      )}
     </div>
   );
 } 

@@ -7,7 +7,8 @@ import {
   getPriceEstimationParams, 
   getBuySharesParams, 
   getSellSharesParams,
-  formatPrice
+  formatPrice,
+  getSharesSupplyParams
 } from './contract';
 
 type TradeFormProps = {
@@ -33,7 +34,6 @@ export default function TradeForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [estimatedPrice, setEstimatedPrice] = useState<string | null>(null);
-  const [pricePerShare, setPricePerShare] = useState<string | null>(null);
 
   const { address } = useAccount();
   
@@ -47,6 +47,7 @@ export default function TradeForm({
   // Get price estimation parameters
   const priceParams = subjectAddress && amount ? 
     getPriceEstimationParams(mode, subjectAddress, amount) : null;
+  console.log('priceParams', priceParams);
   
   // Price estimation for current amount
   const { data: priceData, refetch: refetchPrice } = useReadContract({
@@ -55,45 +56,47 @@ export default function TradeForm({
       enabled: Boolean(priceParams && amount && Number(amount) > 0),
     },
   });
+  console.log('priceData', priceData);
 
-  // Get single share price parameters (for displaying price per share)
-  const singleSharePriceParams = subjectAddress ? 
-    getPriceEstimationParams(mode, subjectAddress, '1') : null;
-
-  // Price estimation for a single share
-  const { data: singleSharePriceData, refetch: refetchSingleSharePrice } = useReadContract({
-    ...singleSharePriceParams,
+  // Get shares supply for the subject
+  const supplyParams = subjectAddress ? getSharesSupplyParams(subjectAddress) : null;
+  const { data: sharesSupply } = useReadContract({
+    ...supplyParams,
     query: {
-      enabled: Boolean(singleSharePriceParams),
+      enabled: Boolean(supplyParams),
     },
   });
+  console.log('sharesSupply', sharesSupply);
 
   useEffect(() => {
     if (mode === 'sell' && share) {
+      setSubjectAddress(share.subject_address);
+    } else if (mode === 'buy' && share && share.subject_address) {
       setSubjectAddress(share.subject_address);
     }
   }, [mode, share]);
   
   useEffect(() => {
-    if (priceData) {
+    if (priceData !== undefined && priceData !== null) {
       setEstimatedPrice(priceData.toString());
     }
   }, [priceData]);
 
-  useEffect(() => {
-    if (singleSharePriceData) {
-      setPricePerShare(singleSharePriceData.toString());
-    }
-  }, [singleSharePriceData]);
+  // Check if this is a first share self-purchase (shares supply = 0, buying own shares)
+  console.log('address', address);
+  console.log('subjectAddress', subjectAddress);
+  const isFirstShareSelfPurchase = 
+    mode === 'buy' && 
+    subjectAddress && 
+    address && 
+    subjectAddress.toLowerCase().replace(/^0x/, '') === address.toLowerCase().replace(/^0x/, '') && 
+    sharesSupply?.toString() === '0';
 
   useEffect(() => {
-    if (subjectAddress) {
-      refetchSingleSharePrice();
-      if (amount && Number(amount) > 0) {
-        refetchPrice();
-      }
+    if (subjectAddress && amount && Number(amount) > 0) {
+      refetchPrice();
     }
-  }, [subjectAddress, amount, refetchPrice, refetchSingleSharePrice]);
+  }, [subjectAddress, amount, refetchPrice]);
 
   useEffect(() => {
     if (isConfirmed) {
@@ -144,12 +147,15 @@ export default function TradeForm({
     try {
       if (mode === 'buy') {
         // For buying shares, we need to send the estimated price amount
-        if (!estimatedPrice) {
+        // Special case: First share self-purchase is always valid with price 0
+        console.log('estimatedPrice', estimatedPrice);
+        console.log('isFirstShareSelfPurchase', isFirstShareSelfPurchase);
+        if ((estimatedPrice === null) || (estimatedPrice === '0' && !isFirstShareSelfPurchase)) {
           throw new Error('Failed to estimate buy price');
+        }  else {
+          const buyParams = getBuySharesParams(subjectAddress, amount, estimatedPrice);
+          writeContract(buyParams);
         }
-        
-        const buyParams = getBuySharesParams(subjectAddress, amount, estimatedPrice);
-        writeContract(buyParams);
       } else {
         // For selling shares
         const sellParams = getSellSharesParams(subjectAddress, amount);
@@ -187,22 +193,6 @@ export default function TradeForm({
           </div>
         )}
 
-        {pricePerShare && (
-          <div className="mb-4 p-3 bg-blue-50 rounded">
-            <p className="font-medium text-blue-800">
-              {mode === 'buy' 
-                ? 'Current Buy Price' 
-                : 'Current Sell Price'}: 
-              <span className="font-bold ml-1">{formatPrice(pricePerShare)} MON</span> / share
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              {mode === 'buy' 
-                ? 'Price provided by getBuyPriceAfterFee contract method' 
-                : 'Price provided by getSellPriceAfterFee contract method'}
-            </p>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit}>
           {mode === 'buy' && (
             <div className="mb-4">
@@ -215,7 +205,7 @@ export default function TradeForm({
                 onChange={(e) => setSubjectAddress(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter the Subject address you want to buy"
-                disabled={isLoading || isPending || isConfirming}
+                disabled={isLoading || isPending || isConfirming || Boolean(share && share.subject_address)}
                 required
               />
             </div>
@@ -257,6 +247,11 @@ export default function TradeForm({
                   {mode === 'buy' ? 'Estimated Total Cost' : 'Estimated Total Proceeds'}: 
                   <span className="font-bold ml-1">{formatPrice(estimatedPrice)} MON</span>
                 </p>
+                {isFirstShareSelfPurchase && (
+                  <p className="text-xs text-green-600 mt-1">
+                    First share purchase for your own account is free
+                  </p>
+                )}
               </div>
             )}
           </div>
