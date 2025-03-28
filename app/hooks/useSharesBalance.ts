@@ -30,9 +30,8 @@ export function useSharesBalance(subjectAddress: string) {
   // Update formatted balance whenever raw balance changes
   useEffect(() => {
     setIsLoading(isPending);
-    
-    if (balance !== undefined) {
-      setFormattedBalance(formatPrice(balance as bigint));
+    if (balance !== undefined && balance !== null) {
+      setFormattedBalance(balance.toString());
       setError(null);
     }
     

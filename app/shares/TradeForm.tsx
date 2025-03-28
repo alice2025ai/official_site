@@ -83,8 +83,7 @@ export default function TradeForm({
   }, [priceData]);
 
   // Check if this is a first share self-purchase (shares supply = 0, buying own shares)
-  console.log('address', address);
-  console.log('subjectAddress', subjectAddress);
+
   const isFirstShareSelfPurchase = 
     mode === 'buy' && 
     subjectAddress && 

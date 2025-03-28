@@ -151,7 +151,7 @@ export function getSharesBalanceParams(userAddress: string, subjectAddress: stri
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: 'sharesBalance',
-    args: [validateAddress(userAddress), validateAddress(subjectAddress)],
+    args: [validateAddress(subjectAddress), validateAddress(userAddress)],
   };
 }
 
