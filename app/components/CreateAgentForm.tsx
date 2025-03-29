@@ -1,16 +1,21 @@
 'use client';
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWallet } from '../context/WalletContext';
-import { API_CONFIG } from '../config';
+import { AI_FRAME_CONFIG, API_CONFIG } from '../config';
+import { useDebounce } from '../hooks/useDebounce';
 
 export default function CreateAgentForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { walletAddress, isWalletConnected, connectWallet, signMessage } = useWallet();
+  const [agentName, setAgentName] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+  const [nameExists, setNameExists] = useState(false);
+  const debouncedName = useDebounce(agentName, 500);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,17 +49,17 @@ export default function CreateAgentForm() {
       await signMessage(messageToSign);
       
       // Step 1: Get agent ID from the first API
-      // const idResponse = await fetch(`http://38.54.24.5:3000/agent/id/${encodeURIComponent(agentName)}`);
+      const idResponse = await fetch(`${AI_FRAME_CONFIG.AI_FRAME_API}/agent/id/${encodeURIComponent(agentName)}`);
       
-      // if (!idResponse.ok) {
-      //   throw new Error(`Failed to get agent ID: ${idResponse.status} ${idResponse.statusText}`);
-      // }
+      if (!idResponse.ok) {
+        throw new Error(`Failed to get agent ID: ${idResponse.status} ${idResponse.statusText}`);
+      }
       
-      // const { agentId } = await idResponse.json();
+      const { agentId } = await idResponse.json();
       
-      // if (!agentId) {
-      //   throw new Error('No agent ID returned from server');
-      // }
+      if (!agentId) {
+        throw new Error('No agent ID returned from server');
+      }
 
       // Generate JSON template
       const agentData = {
@@ -109,18 +114,17 @@ export default function CreateAgentForm() {
       };
 
       // Step 2: Set agent data with the second API
-      //todo: for test
-      // const setResponse = await fetch(`http://38.54.24.5:3000/agents/${agentId}/set`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(agentData),
-      // });
+      const setResponse = await fetch(`${AI_FRAME_CONFIG.AI_FRAME_API}/agents/${agentId}/set`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(agentData),
+      });
 
-      // if (!setResponse.ok) {
-      //   throw new Error(`Failed to create agent: ${setResponse.status} ${setResponse.statusText}`);
-      // }
+      if (!setResponse.ok) {
+        throw new Error(`Failed to create agent: ${setResponse.status} ${setResponse.statusText}`);
+      }
 
       // Step 3: Add Telegram bot to the system
       const addTelegramBotResponse = await fetch(`${API_CONFIG.SERVER_API}/add_tg_bot`, {
@@ -153,6 +157,26 @@ export default function CreateAgentForm() {
     }
   };
 
+  // Check if agent name already exists
+  useEffect(() => {
+    const checkAgentNameExists = async () => {
+      if (!debouncedName || debouncedName.trim() === '') return;
+      
+      setIsChecking(true);
+      try {
+        const response = await fetch(`${API_CONFIG.SERVER_API}/agents/${debouncedName}`);
+        const data = await response.json();
+        setNameExists(data.agent !== null);
+      } catch (error) {
+        console.error('Failed to check agent name:', error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAgentNameExists();
+  }, [debouncedName]);
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       {error && (
@@ -183,19 +207,26 @@ export default function CreateAgentForm() {
         </div>
       </div>
       
-      <div>
-        <label htmlFor="agentName" className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="space-y-2">
+        <label htmlFor="agentName" className="block text-sm font-medium text-gray-700">
           Agent Name
         </label>
         <input
-          type="text"
           id="agentName"
-          name="agentName"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter agent name"
+          type="text"
+          value={agentName}
+          onChange={(e) => setAgentName(e.target.value)}
+          className={`w-full px-3 py-2 border rounded-md ${
+            nameExists ? 'border-red-500' : 'border-gray-300'
+          }`}
           required
-          disabled={isLoading}
         />
+        {isChecking && <p className="text-sm text-gray-500">Checking availability...</p>}
+        {nameExists && (
+          <p className="text-sm text-red-500">
+            This agent name already exists. Please choose another name.
+          </p>
+        )}
       </div>
       
       <div>
@@ -277,7 +308,7 @@ export default function CreateAgentForm() {
         <button
           type="submit"
           className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400"
-          disabled={isLoading || !isWalletConnected}
+          disabled={isLoading || !isWalletConnected || nameExists}
         >
           {isLoading ? 'Creating...' : 'Create Agent'}
         </button>

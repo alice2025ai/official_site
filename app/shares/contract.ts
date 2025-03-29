@@ -1,7 +1,8 @@
 import { parseEther } from 'viem';
+import { WEB3_CONFIG } from '../config';
 
 // Contract configuration
-export const CONTRACT_ADDRESS = '0x41ff7c6A9B10D9a874Ae11D88a3D1e3Eba8ACdeB' as `0x${string}`;
+export const CONTRACT_ADDRESS = WEB3_CONFIG.CONTRACT_ADDRESS as `0x${string}`;
 export const CONTRACT_ABI = [
   {
     inputs: [
