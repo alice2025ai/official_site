@@ -35,7 +35,6 @@ export default function CreateAgentForm() {
     const agentBio = formData.get('agentBio') as string;
     const telegramInviteUrl = formData.get('telegramInviteUrl') as string;
 
-    // 验证 Telegram 邀请链接格式
     const telegramInviteUrlRegex = /^https:\/\/t\.me\/\+[a-zA-Z0-9_-]+$/;
     if (!telegramInviteUrlRegex.test(telegramInviteUrl)) {
       setError('Please enter a valid Telegram invite URL (e.g., https://t.me/+7Ev9E8aomwk5YzI1)');
@@ -213,6 +212,7 @@ export default function CreateAgentForm() {
         </label>
         <input
           id="agentName"
+          name="agentName"
           type="text"
           value={agentName}
           onChange={(e) => setAgentName(e.target.value)}

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import Link from 'next/link';
+import { API_CONFIG } from '../config';
 
 declare global {
   interface Window {
@@ -34,6 +35,7 @@ export default function Web3SignPage() {
 
       const urlParams = new URLSearchParams(window.location.search);
       const challenge = urlParams.get('challenge');
+      const chat_id = urlParams.get('chat_id');
       const shares_subject = urlParams.get('subject');
     //   const user = urlParams.get('user');
       const user = address;
@@ -47,10 +49,10 @@ export default function Web3SignPage() {
       console.log(`Signature is ${signature}`);
 
 
-      const response = await fetch('http://38.54.24.5:3000/verify-signature', {
+      const response = await fetch(`${API_CONFIG.SERVER_API}/verify-signature`, {
         headers: { "Content-Type": "application/json" },
         method: 'POST',
-        body: JSON.stringify({ challenge, signature, shares_subject, user })
+        body: JSON.stringify({ challenge, chat_id,signature, shares_subject, user })
       });
 
       const result = await response.json();
