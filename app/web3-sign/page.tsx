@@ -36,11 +36,9 @@ export default function Web3SignPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const challenge = urlParams.get('challenge');
       const chat_id = urlParams.get('chat_id');
-      const shares_subject = urlParams.get('subject');
-    //   const user = urlParams.get('user');
       const user = address;
       console.log(`challenge is ${challenge}`);
-      console.log(`shares_subject is ${shares_subject}`);
+      console.log(`chat_id is ${chat_id}`);
       if (!challenge) {
         throw new Error('Missing challenge parameter');
       }
@@ -52,7 +50,7 @@ export default function Web3SignPage() {
       const response = await fetch(`${API_CONFIG.SERVER_API}/verify-signature`, {
         headers: { "Content-Type": "application/json" },
         method: 'POST',
-        body: JSON.stringify({ challenge, chat_id,signature, shares_subject, user })
+        body: JSON.stringify({ challenge, chat_id,signature, user })
       });
 
       const result = await response.json();
