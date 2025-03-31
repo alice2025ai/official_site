@@ -4,7 +4,7 @@ import React, { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWallet } from '../context/WalletContext';
-import { AI_FRAME_CONFIG, API_CONFIG } from '../config';
+import { AI_FRAME_CONFIG, API_CONFIG, WEB3_CONFIG } from '../config';
 import { useDebounce } from '../hooks/useDebounce';
 
 export default function CreateAgentForm() {
@@ -68,7 +68,8 @@ export default function CreateAgentForm() {
         modelProvider: "deepseek",
         settings: {
           secrets: {
-            TELEGRAM_BOT_TOKEN: telegramToken
+            TELEGRAM_BOT_TOKEN: telegramToken,
+            NEW_MEMBER_VERIFY_URL: WEB3_CONFIG.NEW_MEMBER_VERIFY_URL
           },
           modelConfig: {
             maxOutputTokens: 4096
